@@ -1,0 +1,10 @@
+
+[	] - le switchAlereadyStarted n'est pas correctement géré (bug quand on revient à la page 1 et qu'on va à left : il n'est jamais remis à false)
+[	] - TODO, trouver comment demander au serveur le nombre de madames de dispo ;)
+[	] - TODO il faut checker au depart si la dame de today est deja sortie. Car
+			sinon on va dl celle d'hier comme si c etait celle de today.
+[	] - A voir ac le flux rss (contient les dates et aussi plus facile d'y recuperer les photos (tout sur la meme page)
+[	] - date avec rss,
+[	] - description aussi...
+[	] - 
+[	] - 

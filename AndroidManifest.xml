@@ -26,7 +26,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".LoadImagesFromSDCardActivity"
+            android:name="com.audric.bonjour.AllMadamesActivity"
             android:label="@string/title_activity_main" >
         </activity>
     </application>

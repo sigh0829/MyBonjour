@@ -20,7 +20,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-public class LoadImagesFromSDCardActivity extends Activity implements
+public class AllMadamesActivity extends Activity implements
 OnItemClickListener {
 
 	/**
@@ -31,6 +31,7 @@ OnItemClickListener {
 	 * Image adapter for the grid view.
 	 */
 	private ThumbnailsAdapter imageAdapter;
+	
 	/**
 	 * Display used for getting the width of the screen. 
 	 */
@@ -38,7 +39,7 @@ OnItemClickListener {
 
 	private BmDatabaseAdapter bmAdapter;
 
-	private static final String TAG = LoadImagesFromSDCardActivity.class
+	private static final String TAG = AllMadamesActivity.class
 			.getSimpleName();
 
 	/**
@@ -57,6 +58,7 @@ OnItemClickListener {
 		display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 		bmAdapter = new BmDatabaseAdapter(getApplicationContext());
 		bmAdapter.open();
+
 		setupViews();
 		setProgressBarIndeterminateVisibility(true); 
 		loadImages();
@@ -83,7 +85,7 @@ OnItemClickListener {
 		sdcardImages = (GridView) findViewById(R.id.gridView);
 		sdcardImages.setNumColumns(display.getWidth()/95);
 		sdcardImages.setClipToPadding(false);
-		sdcardImages.setOnItemClickListener(LoadImagesFromSDCardActivity.this);
+		sdcardImages.setOnItemClickListener(AllMadamesActivity.this);
 		imageAdapter = new ThumbnailsAdapter(getApplicationContext()); 
 		sdcardImages.setAdapter(imageAdapter);
 	}
@@ -235,7 +237,7 @@ OnItemClickListener {
 	 * When an image is clicked, load that image as a puzzle. 
 	 */
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {        
-		Intent i = new Intent(LoadImagesFromSDCardActivity.this, MainActivity.class);
+		Intent i = new Intent(AllMadamesActivity.this, MainActivity.class);
 		i.putExtra(MainActivity.START_PAGE, position+1);
 		startActivity(i);
 	

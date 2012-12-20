@@ -20,23 +20,6 @@ import android.view.animation.AnimationUtils;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-/* 		TODO, trouver comment demander au serveur le nombre de madames de dispo ;)
-		TODO il faut checker au depart si la dame de today est deja sortie. Car 
-		sinon on va dl celle d'hier comme si c etait celle de today.
-		A voir ac le flux rss (contient les dates et aussi plus facile d'y recuperer les photos (tout sur la meme page)
-
-
-		revoir architecture globale. IMG loader : 
-			-	separé en cacheloader && networkloader
-			-	d'abord call to cacheloader, if not found call networkloader
-			-	save of image to cache ds un thread à part, ralentit affichage.
-
-
-//date avec rss,
-//description aussi...
-
-
- */
 
 
 public class MainActivity extends Activity  implements SwitchListener , OnErrorLoadingListener, OnFinishLoadingListener{
@@ -112,7 +95,6 @@ public class MainActivity extends Activity  implements SwitchListener , OnErrorL
 
 	@Override
 	public void onStop () {
-		//mImageView.setVisibility(View.INVISIBLE);
 		super.onStop();
 	}
 
@@ -158,9 +140,7 @@ public class MainActivity extends Activity  implements SwitchListener , OnErrorL
 			goToFirstPage();
 			return true;
 		} else if (itemId == R.id.all_views) {
-			Intent i = new Intent(MainActivity.this, LoadImagesFromSDCardActivity.class);
-			//todo, add current madame in view
-			//i.putExtra()
+			Intent i = new Intent(MainActivity.this, AllMadamesActivity.class);
 			startActivity(i);
 			return true;
 		} else {
@@ -212,17 +192,25 @@ public class MainActivity extends Activity  implements SwitchListener , OnErrorL
 
 
 	public void getNextPage() {
+		Log.d(TAG, "BEfore page : "+currentPage);
 		if (currentPage<MainActivity.NBMAXPAGES-1) {
+			Log.d(TAG, "TEST OK");
 			currentPage++;
 			updateImage();
 		}
+		mImageView.setSwitchAlreadyStarted(false);
+		Log.d(TAG, "After current page : "+currentPage);
 	}
 
 	public void getPreviousPage() {
+		Log.d(TAG, "BEfore page : "+currentPage);
 		if (currentPage>1) {
+			Log.d(TAG, "TEST OK");
 			currentPage--;	
 			updateImage();
 		}
+		mImageView.setSwitchAlreadyStarted(false);
+		Log.d(TAG, "After current page : "+currentPage);
 	}
 
 
@@ -264,6 +252,7 @@ public class MainActivity extends Activity  implements SwitchListener , OnErrorL
 					mImageView.setImageBitmapReset(bitmap,0, true);
 					mImageView.startAnimation(fadeInAnimation);
 					mImageView.setVisibility(View.VISIBLE);
+					mImageView.setSwitchAlreadyStarted(false);
 				}
 
 			}

@@ -63,14 +63,19 @@ public class mImageViewTouch  extends mImageViewTouchBase {
 	{
 		super.setImageRotateBitmapReset( bitmap, reset );
 		mScaleFactor = getMaxZoom() / 3;
-		switchAlreadyStarted = false;
+		setSwitchAlreadyStarted(false);
+	}
+	
+	
+	public void setSwitchAlreadyStarted(Boolean bool) {
+		switchAlreadyStarted = bool;
 	}
 
 
 	@Override
 	public void setImageBitmapReset( final Bitmap bitmap, final int rotation, final boolean reset ) {
 		super.setImageBitmapReset(bitmap, rotation, reset);
-		switchAlreadyStarted = false;
+		setSwitchAlreadyStarted(false);
 	}
 
 
@@ -139,27 +144,33 @@ public class mImageViewTouch  extends mImageViewTouchBase {
 			if ( e1 == null || e2 == null ) return false;
 			if ( e1.getPointerCount() > 1 || e2.getPointerCount() > 1 ) return false;
 
-
+			
 			if(e1.getY()> (getHeight() * 4) /5 && e2.getY()>  (getHeight() * 4) /5) {
+				Log.e(TAG, "ONDOW OF IMAGE");
 				//Log.e(TAG, "scrool on down > 4/5 ");
 				float distance = e1.getX() - e2.getX();
 				//Log.e(TAG, "distance : "+distance + " width : "+getWidth());
 				if ( distance> 0 && Math.abs(distance) > getWidth()/3) {
+					Log.e(TAG, "switch : "+switchAlreadyStarted);
 					if(!switchAlreadyStarted) {
-
+						
 						onSwitch(Direction.RIGHT);
+						setSwitchAlreadyStarted(true);
 					}
-					switchAlreadyStarted = true;
+					
 				}
 				else if (distance <0 && Math.abs(distance)>getWidth()/3) {
+					Log.e(TAG, "switch : "+switchAlreadyStarted);
 					if(!switchAlreadyStarted) {
 						onSwitch(Direction.LEFT);
+						setSwitchAlreadyStarted(true);
 					}
-					switchAlreadyStarted = true;
+					
 				}
 				return true;
 			}
 			else {
+				Log.e(TAG, "ONDOW NOT OF IMAGE");
 				scrollBy( -distanceX, -distanceY );
 				invalidate();
 				return super.onScroll( e1, e2, distanceX, distanceY );}
