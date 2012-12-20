@@ -17,7 +17,7 @@ public class CacheManager {
 
 	private static final String TAG = "CacheManager";
 	private static final String PNG_EXTENSION = ".png";
-	private static final int MAX_CACHE_SIZE_MO = 50; //50 MO of cache is enough!
+	private static final int MAX_CACHE_SIZE_MO = 50; //50 MO  of cache is enough!
 	private static final Long MAX_CACHE_SIZE_OCTETS = MAX_CACHE_SIZE_MO*1024*1024l;
 
 	private static final String ThumbnailDirectory = "thumbnails";
