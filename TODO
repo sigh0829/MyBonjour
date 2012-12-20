@@ -7,4 +7,6 @@
 [	] - date avec rss,
 [	] - description aussi...
 [	] - reinitialiser le scroll après chargement d'une image. Car sinon, ça spam dans les BM!
-[	] - 
+[ x	] - faire que allmadames ne soit lancer qu'une fois
+[	] - Elle doit se mettre à jour aussi activity all madames!
+[	] - http://stackoverflow.com/questions/3693234/custom-imageview-with-drop-shadow à faire

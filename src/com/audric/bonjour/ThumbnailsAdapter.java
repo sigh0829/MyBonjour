@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -44,6 +45,7 @@ class ThumbnailsAdapter extends BaseAdapter {
         } 
         imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
         imageView.setPadding(2, 2, 2, 2);
+        imageView.setBackgroundColor(Color.WHITE);
         imageView.setImageBitmap(photos.get(position));
         return imageView; 
     } 

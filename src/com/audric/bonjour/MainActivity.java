@@ -239,6 +239,11 @@ public class MainActivity extends Activity  implements SwitchListener , OnErrorL
 		}
 	}
 
+	@Override
+	public void onPause() {
+		mImageView.setVisibility(View.INVISIBLE);
+		super.onPause();
+	}
 
 
 

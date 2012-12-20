@@ -146,10 +146,7 @@ public class mImageViewTouch  extends mImageViewTouchBase {
 
 			
 			if(e1.getY()> (getHeight() * 4) /5 && e2.getY()>  (getHeight() * 4) /5) {
-				Log.e(TAG, "ONDOW OF IMAGE");
-				//Log.e(TAG, "scrool on down > 4/5 ");
 				float distance = e1.getX() - e2.getX();
-				//Log.e(TAG, "distance : "+distance + " width : "+getWidth());
 				if ( distance> 0 && Math.abs(distance) > getWidth()/3) {
 					Log.e(TAG, "switch : "+switchAlreadyStarted);
 					if(!switchAlreadyStarted) {
@@ -160,7 +157,6 @@ public class mImageViewTouch  extends mImageViewTouchBase {
 					
 				}
 				else if (distance <0 && Math.abs(distance)>getWidth()/3) {
-					Log.e(TAG, "switch : "+switchAlreadyStarted);
 					if(!switchAlreadyStarted) {
 						onSwitch(Direction.LEFT);
 						setSwitchAlreadyStarted(true);
@@ -170,7 +166,6 @@ public class mImageViewTouch  extends mImageViewTouchBase {
 				return true;
 			}
 			else {
-				Log.e(TAG, "ONDOW NOT OF IMAGE");
 				scrollBy( -distanceX, -distanceY );
 				invalidate();
 				return super.onScroll( e1, e2, distanceX, distanceY );}

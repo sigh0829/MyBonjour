@@ -50,7 +50,8 @@ OnItemClickListener {
 	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);        
+		super.onCreate(savedInstanceState);
+		Log.e(TAG, "ON CREATE");
 		// Request progress bar
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.thumbnails_activity);
@@ -62,6 +63,12 @@ OnItemClickListener {
 		setupViews();
 		setProgressBarIndeterminateVisibility(true); 
 		loadImages();
+	}
+	
+	@Override
+	protected void onRestart() {
+		loadImages();
+		super.onRestart();
 	}
 
 	/**
@@ -77,6 +84,8 @@ OnItemClickListener {
 			v = (ImageView) grid.getChildAt(i);
 			((BitmapDrawable) v.getDrawable()).setCallback(null);
 		}
+		
+		Log.e(TAG, "ON DESTROY");
 	}
 	/**
 	 * Setup the grid view.
@@ -113,7 +122,8 @@ OnItemClickListener {
 	 */
 	private void addImage(LoadedImage... value) {
 		for (LoadedImage image : value) {
-			imageAdapter.addBitmap(image.getBitmap());
+			Bitmap bitmap = image.getBitmap();
+			imageAdapter.addBitmap(bitmap);
 			imageAdapter.notifyDataSetChanged();
 		}
 	}
