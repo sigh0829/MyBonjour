@@ -1,0 +1,12 @@
+<resources>
+
+    <string name="app_name">Bonjour maMadame ;)</string>
+    <string name="title_activity_main">Bonjour maMadame ;)</string>
+    <string name="deletecache">Delete cache</string>
+    <string name="update">Update</string>
+    <string name="next">Next page</string>
+    <string name="previous">Previous page</string>
+    <string name="all_madames">see all madames</string>
+	<string name="delete_from_cache_and_update">Delete from cache and update</string>
+	<string name="gotobeginning">Go to beginning</string>
+</resources>
