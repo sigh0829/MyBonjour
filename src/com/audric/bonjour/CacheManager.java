@@ -179,7 +179,6 @@ public class CacheManager {
 			FileInputStream is; 
 			try {
 				is = new FileInputStream(file);
-
 				bitmap = BitmapFactory.decodeStream(is);
 				is.close();
 			} catch (FileNotFoundException e) {

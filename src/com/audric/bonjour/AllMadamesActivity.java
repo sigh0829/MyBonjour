@@ -23,6 +23,8 @@ import android.widget.Toast;
 public class AllMadamesActivity extends Activity implements
 OnItemClickListener {
 
+
+
 	/**
 	 * Grid view holding the images.
 	 */
@@ -31,7 +33,7 @@ OnItemClickListener {
 	 * Image adapter for the grid view.
 	 */
 	private ThumbnailsAdapter imageAdapter;
-	
+
 	/**
 	 * Display used for getting the width of the screen. 
 	 */
@@ -56,15 +58,16 @@ OnItemClickListener {
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.thumbnails_activity);
 
+
 		display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 		bmAdapter = new BmDatabaseAdapter(getApplicationContext());
 		bmAdapter.open();
-
+ 
 		setupViews();
 		setProgressBarIndeterminateVisibility(true); 
 		loadImages();
 	}
-	
+
 	@Override
 	protected void onRestart() {
 		//loadImages();
@@ -84,7 +87,7 @@ OnItemClickListener {
 			v = (ImageView) grid.getChildAt(i);
 			((BitmapDrawable) v.getDrawable()).setCallback(null);
 		}
-		
+
 		Log.e(TAG, "ON DESTROY");
 	}
 	/**
@@ -171,19 +174,16 @@ OnItemClickListener {
 				if (size == 0) {
 					//No Images available, post some message to the user
 					runOnUiThread(new Runnable() {
-						
+
 						public void run() {
 							Toast.makeText(getApplicationContext(),"No images found...",Toast.LENGTH_SHORT).show();
-							
+
 						}
 					});
 				}
 				else {
-					Log.e(TAG, "Trying to print : "+size+ " bmThumbnails");
-					for (int i = 0; i < size; i++) {
+					while(!cursor.isAfterLast()) {	
 						try {
-							cursor.moveToPosition(i);
-							Log.e(TAG, "LOADING: "+cursor.getString(BmDatabaseAdapter.dateidx));
 							bitmap = CacheManager.getInstance(getApplicationContext()).loadThumbnails(cursor.getString(BmDatabaseAdapter.dateidx));//BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
 							if (bitmap != null) {
 								publishProgress(new LoadedImage(bitmap));
@@ -194,7 +194,9 @@ OnItemClickListener {
 
 							s.printStackTrace();
 						}
+						cursor.moveToNext();
 					}
+
 				}
 				cursor.close();
 			}
@@ -233,7 +235,6 @@ OnItemClickListener {
 	 */
 	private static class LoadedImage {
 		Bitmap mBitmap;
-
 		LoadedImage(Bitmap bitmap) {
 			mBitmap = bitmap;
 		}
@@ -249,7 +250,7 @@ OnItemClickListener {
 		Intent i = new Intent(AllMadamesActivity.this, MainActivity.class);
 		i.putExtra(MainActivity.START_PAGE, position+1);
 		startActivity(i);
-	
+
 	}
 
 }
