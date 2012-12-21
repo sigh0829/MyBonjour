@@ -8,7 +8,6 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Bitmap;
-import android.os.IInterface;
 import android.util.Log;
 
 
@@ -103,7 +102,7 @@ public class BmDatabaseAdapter {
 	public BmDatabaseAdapter open() throws SQLException {
 		mDbHelper = new DatabaseHelper(mCtx);
 		mDb = mDbHelper.getWritableDatabase();	
-		printAllEntries();
+		//printAllEntries();
 		return this;
 	}
 
@@ -168,7 +167,7 @@ public class BmDatabaseAdapter {
 		if(cursor!=null)
 			cursor.moveToFirst();
 
-		Log.e(TAG, "we have "+cursor.getCount()+ " thumbnails in DB");
+		//Log.e(TAG, "we have "+cursor.getCount()+ " thumbnails in DB");
 		return cursor;
 	}
 

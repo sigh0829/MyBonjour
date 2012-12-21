@@ -67,7 +67,7 @@ OnItemClickListener {
 	
 	@Override
 	protected void onRestart() {
-		loadImages();
+		//loadImages();
 		super.onRestart();
 	}
 
@@ -126,7 +126,7 @@ OnItemClickListener {
 			imageAdapter.addBitmap(bitmap);
 			imageAdapter.notifyDataSetChanged();
 		}
-	}
+	} 
 
 	/**
 	 * Save bitmap images into a list and return that list. 
@@ -222,7 +222,6 @@ OnItemClickListener {
 
 		@Override
 		protected void onCancelled() {
-			Log.e(TAG, "ON CANCELLED");
 			cursor.close();
 			super.onCancelled();
 		}

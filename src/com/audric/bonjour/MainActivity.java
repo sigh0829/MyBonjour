@@ -1,28 +1,39 @@
 package com.audric.bonjour;
 
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager; 
+import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
 
-public class MainActivity extends Activity  implements SwitchListener , OnErrorLoadingListener, OnFinishLoadingListener{
+public class MainActivity extends Activity  implements SwitchListener , OnErrorLoadingListener, OnFinishLoadingListener, OnClickListener{
 
 
 	private static final String TAG = MainActivity.class.getSimpleName();
@@ -39,8 +50,47 @@ public class MainActivity extends Activity  implements SwitchListener , OnErrorL
 
 	private BmLoader loader;
 	private mImageViewTouch	mImageView;
-	private Animation fadeInAnimation;	
+	private TextView textview;
+	private TextView timeTv;
+	private Animation fadeInAnimation;
+	private Animation fadeInDescAnimation;	
+	private Animation fadeOutDescAnimation;	
 	BmDatabaseAdapter bmDb = null;
+
+
+	private BroadcastReceiver _broadcastReceiver;
+	private RelativeLayout customStatusBar;
+	private final SimpleDateFormat _sdfWatchTime = new SimpleDateFormat("HH:mm");
+
+
+	Handler uiHandler = new Handler();
+	Runnable hideStatusBarAndDesc = new Runnable(){
+		@Override
+		public void run(){
+			if(textview.getVisibility()==View.VISIBLE) {
+				textview.startAnimation(fadeOutDescAnimation);
+				textview.setVisibility(View.INVISIBLE);
+				customStatusBar.startAnimation(fadeOutDescAnimation);
+				customStatusBar.setVisibility(View.INVISIBLE);
+			}
+		}
+	};
+
+
+	Runnable showStatusBarAndDesc = new Runnable(){
+		@Override
+		public void run(){
+			if(textview.getVisibility()==View.INVISIBLE) {
+				textview.startAnimation(fadeInDescAnimation);
+				textview.setVisibility(View.VISIBLE);
+				customStatusBar.startAnimation(fadeInDescAnimation);
+				customStatusBar.setVisibility(View.VISIBLE);
+			}
+		}
+	};
+
+
+
 
 
 
@@ -48,40 +98,50 @@ public class MainActivity extends Activity  implements SwitchListener , OnErrorL
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
+
 		Intent i = getIntent();
 		if(i!=null) {
 			currentPage = i.getIntExtra(START_PAGE, -1);
-			
 		}
 
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
 		if(currentPage==-1) {
 			currentPage = (savedInstanceState==null?1:savedInstanceState.getInt(LASTMADAME));
 		}
-		
-		//getApplicationContext().deleteDatabase(BmDatabaseAdapter.DATABASE_NAME);
 		bmDb = new BmDatabaseAdapter(getApplicationContext());
 		bmDb.open();
-		fadeInAnimation = AnimationUtils.loadAnimation(this, R.anim.fadein/*android.R.anim.fade_in*/);
 
-		
-		
-		progressBar = (ProgressBar) findViewById(R.id.progressBar);
-		mImageView = (mImageViewTouch)findViewById( R.id.imageView1 );
-		mImageView.setOnSwitchListener(this);
-	}
+		setUpViews();
 
-
-
-
-	@Override 
-	public void onStart() {
-		super.onStart();
 		if(!isInternetOn())
 			Toast.makeText(this, "Not connected to Internet.", Toast.LENGTH_SHORT).show();
 
 		updateImage();
+	}
+
+
+
+	private void setUpViews() {
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		fadeInAnimation = AnimationUtils.loadAnimation(this, R.anim.fadein);
+		fadeOutDescAnimation = AnimationUtils.loadAnimation(this, R.anim.fadeoutdesc);
+		fadeInDescAnimation = AnimationUtils.loadAnimation(this, R.anim.fadeindesc);
+
+		progressBar = (ProgressBar) findViewById(R.id.progressBar);
+		mImageView = (mImageViewTouch)findViewById( R.id.imageView1 );
+		Typeface font = Typeface.createFromAsset(getAssets(), "fonts/Roboto-Regular.ttf");  
+		textview = (TextView) findViewById(R.id.description);
+		textview.setTypeface(font);
+		textview.setOnClickListener(this);
+		textview.setClickable(true);
+		textview.getPaint().setShadowLayer(2, 1, 0, Color.GRAY);
+
+		timeTv = (TextView) findViewById(R.id.timetv);
+		timeTv.setText(_sdfWatchTime.format(new Date()));
+
+		mImageView.setOnSwitchListener(this);
+		mImageView.setOnClickListener(this);
+		customStatusBar = (RelativeLayout) findViewById(R.id.customStatusBar);
 
 	}
 
@@ -92,11 +152,31 @@ public class MainActivity extends Activity  implements SwitchListener , OnErrorL
 	}
 
 
+	@Override
+	protected void onStart() {
+		timeTv.setText(_sdfWatchTime.format(new Date()));
+		_broadcastReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context ctx, Intent intent)
+			{
+				if (intent.getAction().compareTo(Intent.ACTION_TIME_TICK) == 0) {
+					timeTv.setText(_sdfWatchTime.format(new Date()));
+				}
+			}
+		};
+
+		registerReceiver(_broadcastReceiver, new IntentFilter(Intent.ACTION_TIME_TICK));
+		super.onStart();
+	}
 
 	@Override
 	public void onStop () {
+		if (_broadcastReceiver != null)
+			unregisterReceiver(_broadcastReceiver);
 		super.onStop();
 	}
+
+
 
 
 	@Override
@@ -125,10 +205,6 @@ public class MainActivity extends Activity  implements SwitchListener , OnErrorL
 		if (itemId == R.id.previous_page) {
 			getPreviousPage();
 			return true;
-		} else if (itemId == R.id.update) {
-			Log.d(TAG,"Updating..");
-			updateImage();
-			return true;
 		} else if (itemId == R.id.next_page) {
 			getNextPage();
 			return true;
@@ -150,7 +226,7 @@ public class MainActivity extends Activity  implements SwitchListener , OnErrorL
 	}
 
 
-	
+
 	private void goToFirstPage() {
 		currentPage = 1;
 		updateImage();
@@ -192,31 +268,27 @@ public class MainActivity extends Activity  implements SwitchListener , OnErrorL
 
 
 	public void getNextPage() {
-		Log.d(TAG, "BEfore page : "+currentPage);
 		if (currentPage<MainActivity.NBMAXPAGES-1) {
-			Log.d(TAG, "TEST OK");
 			currentPage++;
 			updateImage();
 		}
 		mImageView.setSwitchAlreadyStarted(false);
-		Log.d(TAG, "After current page : "+currentPage);
 	}
 
 	public void getPreviousPage() {
-		Log.d(TAG, "BEfore page : "+currentPage);
 		if (currentPage>1) {
-			Log.d(TAG, "TEST OK");
 			currentPage--;	
 			updateImage();
 		}
 		mImageView.setSwitchAlreadyStarted(false);
-		Log.d(TAG, "After current page : "+currentPage);
 	}
 
 
 	public void updateImage() {
 		if(loader!=null)
 			loader.shouldStop();
+		uiHandler.removeCallbacks(hideStatusBarAndDesc);
+		uiHandler.post(hideStatusBarAndDesc); 
 
 		if(!CacheManager.getInstance(getApplicationContext()).isInCache(currentPage)) {
 			progressBar.setVisibility(View.VISIBLE);
@@ -237,12 +309,6 @@ public class MainActivity extends Activity  implements SwitchListener , OnErrorL
 		else if(direction == Direction.RIGHT) {
 			getNextPage();
 		}
-	}
-
-	@Override
-	public void onPause() {
-		mImageView.setVisibility(View.INVISIBLE);
-		super.onPause();
 	}
 
 
@@ -286,4 +352,25 @@ public class MainActivity extends Activity  implements SwitchListener , OnErrorL
 
 
 	}
+
+
+
+	@Override
+	public void onClick(View v) {
+		if(v==mImageView) {
+			if(textview.getVisibility()==View.INVISIBLE) {
+				uiHandler.post(showStatusBarAndDesc);
+				uiHandler.postDelayed(hideStatusBarAndDesc, 3000);
+			} else  {
+				uiHandler.removeCallbacks(hideStatusBarAndDesc);
+				uiHandler.post(hideStatusBarAndDesc);
+			}
+
+		}
+		else /*if(v==textview)*/ {
+			uiHandler.removeCallbacks(hideStatusBarAndDesc);
+			uiHandler.postDelayed(hideStatusBarAndDesc, 3000);
+		}
+	}
+
 }

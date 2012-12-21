@@ -25,7 +25,9 @@ public class mImageViewTouch  extends mImageViewTouchBase {
 	protected GestureDetector gestureDetector;
 
 	protected SwitchListener switchListener = null;
-
+	private OnClickListener clickListener = null;
+	
+	
 	private boolean switchAlreadyStarted = false;
 
 
@@ -33,6 +35,7 @@ public class mImageViewTouch  extends mImageViewTouchBase {
 	protected OnLongClickListener longClickListener;
 	protected ScaleListener				mScaleListener;
 	protected ScaleGestureDetector	mScaleDetector;
+	
 
 
 
@@ -124,6 +127,14 @@ public class mImageViewTouch  extends mImageViewTouchBase {
 
 
 	class GestureListener extends GestureDetector.SimpleOnGestureListener {
+		
+		
+		@Override
+		public boolean onSingleTapConfirmed(MotionEvent e) {
+			Log.d(TAG, "on single TAP");
+			onClick();
+			return super.onSingleTapConfirmed(e);
+		}
 
 		@Override
 		public boolean onDoubleTap( MotionEvent e )
@@ -229,4 +240,15 @@ public class mImageViewTouch  extends mImageViewTouchBase {
 		else
 			Log.d(TAG, "listener switch is null");
 	}
+	
+	public void setOnClickListener(OnClickListener listener) {
+		this.clickListener = listener;
+	}
+	
+	private void onClick() {
+		if(clickListener!=null)
+			clickListener.onClick(this);
+	}
+	
+	
 }

@@ -60,7 +60,7 @@ public class BmLoader extends Thread {
 
 	public void run() {
 		loadImage();
-		shouldStop();
+		shouldStop(); 
 	}
 	
 	

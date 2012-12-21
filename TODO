@@ -10,3 +10,4 @@
 [ x	] - faire que allmadames ne soit lancer qu'une fois
 [	] - Elle doit se mettre à jour aussi activity all madames!
 [	] - http://stackoverflow.com/questions/3693234/custom-imageview-with-drop-shadow à faire
+[	] - cache bitmap des thumbnails ? pour que le restart de la view soit plus rapide

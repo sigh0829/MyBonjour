@@ -203,7 +203,7 @@ public class CacheManager {
 			
 			if ( !name.endsWith( PNG_EXTENSION))
 				name +=  PNG_EXTENSION;
-			Log.d(TAG, "thumbnails name to load : "+name);
+			//Log.d(TAG, "thumbnails name to load : "+name);
 			if(!isInCache(name))
 				return null;
 			File thumbnailsDir = new File(context.getExternalCacheDir(),ThumbnailDirectory);
@@ -307,7 +307,7 @@ public class CacheManager {
 
 
 	public synchronized void cacheDelete(final String name) {
-		Log.d(TAG, "deleting from cache: "+name);
+		//Log.d(TAG, "deleting from cache: "+name);
 		if(isExternalStorageWritable()) {
 			new Thread(new Runnable() {
 
@@ -370,7 +370,7 @@ public class CacheManager {
 
 				File file = new File(thumbnailsDir, name);
 
-				Log.d(TAG, "saving '"+ name+"' to thumbnails dir:"+ThumbnailDirectory);
+				//Log.d(TAG, "saving '"+ name+"' to thumbnails dir:"+ThumbnailDirectory);
 				FileOutputStream os;
 				try {
 					os = new FileOutputStream(file);

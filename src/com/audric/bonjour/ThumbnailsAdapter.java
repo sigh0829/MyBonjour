@@ -45,7 +45,8 @@ class ThumbnailsAdapter extends BaseAdapter {
         } 
         imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
         imageView.setPadding(2, 2, 2, 2);
-        imageView.setBackgroundColor(Color.WHITE);
+        imageView.setBackgroundColor(Color.BLACK);
+        
         imageView.setImageBitmap(photos.get(position));
         return imageView; 
     } 
