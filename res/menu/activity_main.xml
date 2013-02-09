@@ -27,5 +27,9 @@
         android:id="@+id/firstPage"
         android:orderInCategory="5"
         android:title="@string/gotobeginning"/>
+     <item
+        android:id="@+id/httprequest"
+        android:orderInCategory="5"
+        android:title="http request"/>
 
 </menu>

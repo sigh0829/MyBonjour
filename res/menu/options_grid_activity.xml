@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/change_ip"
+        android:title="Edit ip"/>
+    <item
+        android:id="@+id/update_gridview"
+        android:title="Update"/>
+    <item
+        android:id="@+id/delete_cache_gridview"
+        android:title="Delete cache"/>
+
+</menu>

@@ -1,13 +1,3 @@
 
-[	] - le switchAlereadyStarted n'est pas correctement géré (bug quand on revient à la page 1 et qu'on va à left : il n'est jamais remis à false)
-[	] - TODO, trouver comment demander au serveur le nombre de madames de dispo ;)
-[	] - TODO il faut checker au depart si la dame de today est deja sortie. Car
-			sinon on va dl celle d'hier comme si c etait celle de today.
-[	] - A voir ac le flux rss (contient les dates et aussi plus facile d'y recuperer les photos (tout sur la meme page)
-[	] - date avec rss,
-[	] - description aussi...
-[	] - reinitialiser le scroll après chargement d'une image. Car sinon, ça spam dans les BM!
-[ x	] - faire que allmadames ne soit lancer qu'une fois
-[	] - Elle doit se mettre à jour aussi activity all madames!
-[	] - http://stackoverflow.com/questions/3693234/custom-imageview-with-drop-shadow à faire
-[	] - cache bitmap des thumbnails ? pour que le restart de la view soit plus rapide
+[	] 	- base sqlite locale pour desription, date,... ?
+[	]	- affichage description, date sur imageview ?	

@@ -37,7 +37,7 @@ public class CacheManager {
 	private CacheManager(Context ctx) {
 		context = ctx;
 	}
-	
+
 
 	private static boolean isExternalStorageWritable() {
 		String state = Environment.getExternalStorageState();
@@ -64,14 +64,14 @@ public class CacheManager {
 
 					public void run() {	
 
-						String newName = new String(date);
-						if( !newName.endsWith(PNG_EXTENSION)) {
-							newName += PNG_EXTENSION;
+						String newDate = new String(date);
+						if( !newDate.endsWith(PNG_EXTENSION)) {
+							newDate += PNG_EXTENSION;
 						}
-						saveOriginal(bitmap,newName);
+						saveOriginal(bitmap,newDate);
 						/* save also the thumbnails to the directory of thumbnails */
-						saveThumbnails(buildThumbnails(bitmap), newName);
-						
+						saveThumbnails(buildThumbnails(bitmap), newDate);
+
 					}
 				}).start();
 				return true;
@@ -89,13 +89,13 @@ public class CacheManager {
 	}
 
 
-	private void saveOriginal(Bitmap bitmap, String name) {
-		if( ! name.endsWith(PNG_EXTENSION)) {
-			name += PNG_EXTENSION;
+	private void saveOriginal(Bitmap bitmap, String date) {
+		if( ! date.endsWith(PNG_EXTENSION)) {
+			date += PNG_EXTENSION;
 		}
-		File file = new File(context.getExternalCacheDir(), name);
+		File file = new File(context.getExternalCacheDir(), date);
 
-		Log.d(TAG, "saving '"+ name+"' to cache");
+		Log.d(TAG, "saving '"+ date+"' to cache");
 		FileOutputStream os;
 		try {
 			os = new FileOutputStream(file);
@@ -124,11 +124,11 @@ public class CacheManager {
 	 * @param date : the strings which represents the date. Without extensions
 	 * @return true if find, false otherwise
 	 */
-	public boolean isInCache(String name) {
+	public boolean isInCache(String date) {
 		boolean imageFound = false;
 		if(isExternalStorageWritable()) {
-			if( ! name.endsWith(PNG_EXTENSION) )
-				name+=  PNG_EXTENSION;
+			if( ! date.endsWith(PNG_EXTENSION) )
+				date+=  PNG_EXTENSION;
 
 			File cacheDirectory = context.getExternalCacheDir();
 
@@ -138,7 +138,7 @@ public class CacheManager {
 			if(fileList!=null) {
 				while (!imageFound && indice<fileList.length) {
 					File temp = fileList[indice];
-					if (temp.getName().equals(name))
+					if (temp.getName().equals(date))
 						imageFound=true;
 					indice++;
 				}
@@ -150,7 +150,7 @@ public class CacheManager {
 
 
 
-	public boolean isInCache(int page) {
+	/*public boolean isInCache(int page) {
 		boolean imageFound = false;
 		if(isExternalStorageWritable()) {
 			String name = BmLoader.getDateOfImage(page-1);
@@ -158,7 +158,7 @@ public class CacheManager {
 				imageFound = true;
 		}
 		return imageFound;
-	}
+	}*/
 
 
 
@@ -167,13 +167,13 @@ public class CacheManager {
 		Bitmap bitmap = null;
 		if(isExternalStorageWritable()) {
 
-			
+
 			if ( !name.endsWith( PNG_EXTENSION))
 				name +=  PNG_EXTENSION;
-			
+
 			if(!isInCache(name))
 				return null;
-			
+
 			File file = new File(context.getExternalCacheDir(), name);
 
 			FileInputStream is; 
@@ -193,26 +193,27 @@ public class CacheManager {
 
 		return bitmap;
 	}
-	
-	public Bitmap loadThumbnails(String name) {
+
+	public Bitmap loadThumbnails(String date) {
 		/* if the external storage is available, get our cache dir */
 		Bitmap bitmap = null;
 		if(isExternalStorageWritable()) {
 
-			
-			if ( !name.endsWith( PNG_EXTENSION))
-				name +=  PNG_EXTENSION;
+
+			if ( !date.endsWith( PNG_EXTENSION))
+				date +=  PNG_EXTENSION;
+
 			//Log.d(TAG, "thumbnails name to load : "+name);
-			if(!isInCache(name))
+			if(!isInCache(date))
 				return null;
 			File thumbnailsDir = new File(context.getExternalCacheDir(),ThumbnailDirectory);
 			if(!thumbnailsDir.exists()) {
 				return null;
 			}
-			File file = new File(thumbnailsDir,name);
+			File file = new File(thumbnailsDir,date);
 			if(!file.exists())
 				return null;
-			
+
 			FileInputStream is; 
 			try {
 				is = new FileInputStream(file);
@@ -274,7 +275,7 @@ public class CacheManager {
 	/**
 	 * Delete every file found in our externalCacheDirectory
 	 */
-	public void deleteAllCachedFiles() {
+	/*public void deleteAllCachedFiles() {
 		if(isExternalStorageWritable()) {
 
 			File cacheDirectory = context.getExternalCacheDir();
@@ -291,18 +292,49 @@ public class CacheManager {
 
 			//TODO delete thumbnails also
 		}
-	}
+	}*/
 
 
 
-	public void printCacheFiles() {
+	/*public void printCacheFiles() {
 		if(isExternalStorageWritable()) {
 			File cacheDirectory = context.getExternalCacheDir();
 			File[] fileList = cacheDirectory.listFiles();
 			for(File temp: fileList)
 				Log.d(TAG,"cachedFile:"+temp.getName());
 		}
+	}*/
+
+	public synchronized void deleteCache() {
+		
+		Log.d(TAG, "DELETING ALL FILES IN CACHE");
+		if(isExternalStorageWritable()) {
+			new Thread(new Runnable() {
+
+				public void run() {
+					File cacheDirectory = context.getExternalCacheDir();
+					Log.d(TAG,"Deleting every files in "+cacheDirectory.getAbsolutePath());
+					File[] fileList = cacheDirectory.listFiles();
+					for (File file : fileList) {
+						if(!file.isDirectory())
+							file.delete();
+					}
+				  	
+					File thumbnailsDirectory = new File(cacheDirectory, ThumbnailDirectory);
+					if(thumbnailsDirectory.exists()) {
+						File[] fileThumbList = thumbnailsDirectory.listFiles();
+						for (File file : fileThumbList) {
+							if(!file.isDirectory())
+								file.delete();
+						}
+					}
+				}
+
+			}).start();
+
+		} 
 	}
+
 
 
 	public synchronized void cacheDelete(final String name) {
@@ -362,14 +394,13 @@ public class CacheManager {
 				if(!thumbnailsDir.exists()) {
 					thumbnailsDir.mkdir();
 				}
- 
-				
+
+
 				if ( !name.endsWith( PNG_EXTENSION))
 					name +=  PNG_EXTENSION;
 
 				File file = new File(thumbnailsDir, name);
 
-				//Log.d(TAG, "saving '"+ name+"' to thumbnails dir:"+ThumbnailDirectory);
 				FileOutputStream os;
 				try {
 					os = new FileOutputStream(file);
@@ -386,12 +417,4 @@ public class CacheManager {
 
 		}
 	}
-
-
-
-
-
-
-
-
 }

@@ -14,9 +14,9 @@ import android.util.Log;
 public class BmDatabaseAdapter {
 	// Database Key
 	public static final String KEY_ROWID = "_id";
-	public static final String KEY_NAME = "name";
 	public static final String KEY_DATE = "date";
 	public static final String KEY_DESCRIPTION = "description";
+	public static final String KEY_IMG_ID = "img_id";
 
 
 
@@ -33,7 +33,6 @@ public class BmDatabaseAdapter {
 
 	private static final String DATABASE_CREATE_IMAGE = "create table "
 			+ IMAGE_TABLE + " (_id integer primary key autoincrement, "
-			+ KEY_NAME + " text not null,"
 			+ KEY_DATE + " text not null,"
 			+ KEY_DESCRIPTION + "	text not null);";
 
@@ -41,15 +40,14 @@ public class BmDatabaseAdapter {
 
 	private static final String DATABASE_CREATE_THUMBNAILS = "create table "
 			+ THUMBNAILS_TABLE + " (_id integer primary key autoincrement, "
-			+ KEY_NAME + " text not null,"
 			+ KEY_DATE + " text not null," 
-			+ KEY_DESCRIPTION + "	text not null);";
+			+ KEY_IMG_ID + "	 " + ");";
 
 	// idx in DB
 	public static final int rowidx = 0;
-	public static final int nameidx = 1;
-	public static final int dateidx = 2;
-	public static final int descidx = 3;
+	public static final int dateidx = 1;
+	public static final int descidx = 2;
+	public static final int imgidx = 2; // for thumbnails only !
 
 
 
@@ -112,71 +110,74 @@ public class BmDatabaseAdapter {
 	}
 
 
-	public void printAllEntries() {
-		Cursor thumbnails = fetchAllThumbnails();
 
-		if(thumbnails==null)
-			Log.i(TAG, "PRINT ALL HUMBNAILSthumbnails entry NULL");
-		else {
-			while(!thumbnails.isAfterLast() && !thumbnails.isBeforeFirst() && !thumbnails.isClosed()) {
-				Log.i(TAG, "thumbnails entry: name: '"+thumbnails.getString(1) + "';  date: '"
-						+thumbnails.getString(2) +"';  description: '"+thumbnails.getString(3) + "'");
-				thumbnails.moveToNext();
-			}
-			thumbnails.close();
-		}
-	}
+	public synchronized void createImage(String date, String desc, Bitmap bitmap) {
+		if(CacheManager.getInstance(mCtx).saveImageToCache(date, bitmap)) {
+			if(!isInDatabase(date)) {
+				ContentValues imgValues = new ContentValues();
+				imgValues.put(KEY_DATE, date);
+				imgValues.put(KEY_DESCRIPTION, desc);
+				//imgValues.put(KEY_NAME, name);
+				Log.d(TAG, "Adding new entry to "+DATABASE_NAME+ " date:"+ date);
+				long imgId = mDb.insert(IMAGE_TABLE, null, imgValues);
 
-
-
-	public void createImage(String name, String date, String desc, Bitmap bitmap) {
-		if(CacheManager.getInstance(mCtx).saveImageToCache(name, bitmap)) {
-			if(!isInDatabase(name)) {
-				ContentValues initialValues = new ContentValues();
-				initialValues.put(KEY_DATE, date);
-				initialValues.put(KEY_DESCRIPTION, desc);
-				initialValues.put(KEY_NAME, name);
-				Log.d(TAG, "Adding new entry to "+DATABASE_NAME+ " name:"+ name + " date:"+date);
-
-
-				mDb.insert(THUMBNAILS_TABLE, null, initialValues);
-				mDb.insert(IMAGE_TABLE, null, initialValues);
+				if(imgId!= -1) {
+					ContentValues thumbValues = new ContentValues();
+					thumbValues.put(KEY_DATE, date);
+					//thumbValues.put(KEY_DESCRIPTION, desc);
+					//thumbValues.put(KEY_NAME, name);
+					thumbValues.put(KEY_IMG_ID, imgId);
+					mDb.insert(THUMBNAILS_TABLE, null, thumbValues);
+				}
 			}
 			else {
-				ContentValues initialValues = new ContentValues();
-				initialValues.put(KEY_DATE, date);
-				initialValues.put(KEY_DESCRIPTION, desc);
-				initialValues.put(KEY_NAME, name);
-				Log.d(TAG, "updatig entry to "+DATABASE_NAME+ " name:"+ name + " date:"+date);
+				ContentValues imgValues = new ContentValues();
+				imgValues.put(KEY_DATE, date);
+				imgValues.put(KEY_DESCRIPTION, desc);
+				//imgValues.put(KEY_NAME, name);
+				Log.d(TAG, "updatig entry to "+DATABASE_NAME + " date:"+date);
 
-				mDb.update(IMAGE_TABLE, initialValues, KEY_NAME +"= '" + name + "'", null);
-				mDb.update(THUMBNAILS_TABLE, initialValues, KEY_NAME +"= '" + name + "'", null);
+				mDb.update(IMAGE_TABLE, imgValues, KEY_DATE +"= '" + date + "'", null);
+
+				/* find the image id associated with the thumbnails to update */
+				/*Cursor toUpdate = fetchImage(date);
+				if(toUpdate!=null) {  
+					long imgId = toUpdate.getLong(rowidx); 
+					Log.d(TAG, "foud imgId = "+imgId+ ", updating it!:X");
+					ContentValues thumbValues = new ContentValues();
+					//thumbValues.put(KEY_DATE, date);
+					//thumbValues.put(KEY_DESCRIPTION, desc);
+					//thumbValues.put(KEY_NAME, name);
+					thumbValues.put(KEY_IMG_ID, imgId);
+					mDb.update(THUMBNAILS_TABLE, imgValues, KEY_IMG_ID +"= '" + imgId + "'", null);
+				}*/
+
 			}
 		}
 		else {
-			Log.d(TAG, "Failed to save new entry to "+DATABASE_NAME+ " name:"+ name + " date:"+date);
+			Log.d(TAG, "Failed to save new entry to "+DATABASE_NAME+ " date:"+date);
 		}
 
 
 	}
 
 	public Cursor fetchAllThumbnails() {
-		Cursor cursor = mDb.query(THUMBNAILS_TABLE,
-				new String[] { KEY_ROWID, KEY_NAME, KEY_DATE, KEY_DESCRIPTION}, null,
-				null, null, null, KEY_DATE + " DESC");
+		Cursor cursor = mDb.query(true, THUMBNAILS_TABLE,
+				new String[] { KEY_ROWID, KEY_DATE}, null,
+				null, null, null, KEY_DATE + " DESC", null);
 		if(cursor!=null)
 			cursor.moveToFirst();
 
-		//Log.e(TAG, "we have "+cursor.getCount()+ " thumbnails in DB");
+		Log.e(TAG, "we have "+cursor.getCount()+ " thumbnails in DB");
 		return cursor;
 	}
 
 
 	public boolean isInDatabase(String date) throws SQLException {
-		Cursor mCursor =
-				mDb.query(true, IMAGE_TABLE,
-						new String[] { KEY_ROWID, KEY_NAME, KEY_DATE, KEY_DESCRIPTION},
-						KEY_DATE + "= '" + date +"'", null, null, null, null, null);
+		Cursor mCursor = mDb.query
+				(true, IMAGE_TABLE,
+				new String[] {KEY_DATE},
+				KEY_DATE + "= '" + date +"'", null, null, null, null, null);
 		if (mCursor != null && mCursor.getCount()>0) {
 			Log.d(TAG, "FOUND ONE MADAME IN DB FOR :"+date);
 			mCursor.close();	
@@ -184,7 +185,7 @@ public class BmDatabaseAdapter {
 		}
 		else if(mCursor!=null)
 			mCursor.close();
-		
+
 
 		return false;
 	}
@@ -193,7 +194,7 @@ public class BmDatabaseAdapter {
 	public Cursor fetchImage(String date) throws SQLException {
 		Cursor mCursor =
 				mDb.query(true, IMAGE_TABLE,
-						new String[] { KEY_ROWID, KEY_NAME, KEY_DATE, KEY_DESCRIPTION},
+						new String[] { KEY_ROWID, KEY_DATE, KEY_DESCRIPTION},
 						KEY_DATE + "=" + date, null, null, null, null, null);
 		if (mCursor != null) {
 			Log.d(TAG, "FOUND ONE MADAME IN DB FOR :"+date);
@@ -206,7 +207,7 @@ public class BmDatabaseAdapter {
 	public void deleteImage(String date) throws SQLException {
 		Log.d(TAG, "Deleting " + date + " from DB");
 		mDb.delete(THUMBNAILS_TABLE, KEY_DATE + "='" + date + "'", null) ;
-		mDb.delete(IMAGE_TABLE, KEY_NAME + "='" + date + "'", null) ;
+		mDb.delete(IMAGE_TABLE, KEY_DATE + "='" + date + "'", null) ;
 		CacheManager.getInstance(mCtx).cacheDelete(date);
 
 	}
