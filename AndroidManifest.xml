@@ -16,7 +16,7 @@
         android:debuggable="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@android:style/Theme.Light.NoTitleBar" >
+        android:theme="@android:style/Theme.Black.NoTitleBar" >
         <activity
             android:name="com.audric.bonjour.MainActivity"
             android:label="@string/title_activity_main"
