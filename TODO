@@ -1,3 +1,9 @@
 
-[	] 	- base sqlite locale pour desription, date,... ?
-[	]	- affichage description, date sur imageview ?	
+[x	] 	- base sqlite locale pour desription, date,... ?
+[	]	- sqlite : recupere desc
+[	]	- affichage description, date sur imageview ? description todo
+[	]	- intégrer zoom image view		 : :O pas easy ?!
+[x	]	- ordre des madames par correct lors du chargements depuis les préférences.
+[x	]	- onpage change : masquer textview
+[	]	- recupere toutes les ifnos au startpup (pas only les filename) et stocké dans db. comme ça accessible offline
+

@@ -1,22 +1,28 @@
 package com.audric.bonjour;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.NoSuchElementException;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
+import android.view.View.OnClickListener;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.audric.bonjour.WebServiceClient.OnUrlsLoadingListener;
-import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.FailReason;
@@ -24,25 +30,35 @@ import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
-public class ImagePagerActivity extends BaseActivity implements OnUrlsLoadingListener {
-	//private static final String TAG = ImagePagerActivity.class.getSimpleName();
+public class ImagePagerActivity extends BaseActivity 
+implements OnUrlsLoadingListener {
+	private static final String TAG = ImagePagerActivity.class.getSimpleName();
 
-	private PreferencesManager prefManager;
 	private int pagerPosition;
+	private TextView date_tv;
+	private TextView description_tv;
+	private ViewPager pager;
+	private BmDatabaseAdapter mDb;
+	private ImagePagerAdapter imageAdapter = null;
+	private Animation fadein;
+	private Animation fadeout;
 
-	
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ac_image_pager);
 
+		fadein = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fadein);
+		fadeout = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fadeout);
+
 		Bundle bundle = getIntent().getExtras();
 		prepareDialog(ImagePagerActivity.this);
-		
+
 		WebServiceClient ws = WebServiceClient.getInstance();
 		ws.retrieveMadamesUrlsInThread(this);
-		prefManager = new PreferencesManager(getApplicationContext());
 
+		mDb = new BmDatabaseAdapter(getApplicationContext());
+		mDb.open();
 
 		pagerPosition = bundle.getInt(Extra.IMAGE_POSITION, 0);
 
@@ -57,6 +73,8 @@ public class ImagePagerActivity extends BaseActivity implements OnUrlsLoadingLis
 		.bitmapConfig(Bitmap.Config.RGB_565)
 		.displayer(new FadeInBitmapDisplayer(300))
 		.build();
+
+		pager = (ViewPager) findViewById(R.id.pager);
 	}
 
 	private class ImagePagerAdapter extends PagerAdapter {
@@ -89,7 +107,7 @@ public class ImagePagerActivity extends BaseActivity implements OnUrlsLoadingLis
 			final ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image);
 			final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
 
-			imageLoader.displayImage(images.get(position), imageView, options, new SimpleImageLoadingListener() {
+			imageLoader.displayImage(images.get(position), ( ImageView) imageView, options, new SimpleImageLoadingListener() {
 				@Override
 				public void onLoadingStarted() {
 					spinner.setVisibility(View.VISIBLE);
@@ -118,6 +136,7 @@ public class ImagePagerActivity extends BaseActivity implements OnUrlsLoadingLis
 				@Override
 				public void onLoadingComplete(Bitmap loadedImage) {
 					spinner.setVisibility(View.GONE);
+					imageView.setOnClickListener(new ShowDetailsClickListener());
 				}
 			});
 
@@ -145,7 +164,7 @@ public class ImagePagerActivity extends BaseActivity implements OnUrlsLoadingLis
 	}
 
 
-	
+
 
 
 	@Override
@@ -153,38 +172,120 @@ public class ImagePagerActivity extends BaseActivity implements OnUrlsLoadingLis
 		dismissDialog();
 		runOnUiThread(new Runnable() {
 
-			@Override
+			@Override 
 			public void run() {
 
 				ArrayList<String> imageUrls;
 				if(!isOK) {
-					imageUrls = prefManager.getUrlsFromPref();
+					imageUrls = mDb.fetchAllUrls();
 				}
 				else
-					imageUrls = urls;
-
-				ViewPager pager = (ViewPager) findViewById(R.id.pager);
+					imageUrls = urls; 
 
 				if(imageUrls != null && !imageUrls.isEmpty()) {
-					pager.setAdapter(new ImagePagerAdapter(imageUrls));
+					imageAdapter = new ImagePagerAdapter(imageUrls);
+					pager.setAdapter(imageAdapter);
 					pager.setCurrentItem(pagerPosition);
-					pager.setOnTouchListener(new OnTouchListener() {
-
-						@Override
-						public boolean onTouch(View v, MotionEvent event) {
-							/*float y = event.getY();
-							if(y > (v.getHeight()* 4)/5 ) {
-							return false;
-							}
-							else
-							return true;*/
-							return false;
-						}
-					});
+					pager.setOnPageChangeListener(new OnPageChangedListerner());
+					date_tv = (TextView) findViewById(R.id.tv_date_pager);
+					description_tv = (TextView) findViewById(R.id.tv_desc_pager);
 				}
 			}
 		});
 
 
+	}
+
+	@Override
+	protected void onDestroy() {
+		mDb.close();
+		super.onDestroy();
+	}
+
+	private class ShowDetailsClickListener implements OnClickListener  {
+
+		@Override
+		public void onClick(View v) {
+			if(imageAdapter != null) {
+				String date = getDateFromPage();
+
+				if (date != null) {
+					date_tv.setText(date);
+					if (date_tv.getVisibility() == View.INVISIBLE) {
+						date_tv.startAnimation(fadein);
+						date_tv.setVisibility(View.VISIBLE);
+					}
+					else {
+						date_tv.startAnimation(fadeout);
+						date_tv.setVisibility(View.INVISIBLE);
+					}
+				}
+
+				String desc = getDescriptionFromPage();
+				//desc = "Proposé par Morback";
+				if(desc != null) {
+					description_tv.setText(desc);
+					if (description_tv.getVisibility() == View.INVISIBLE) {
+						description_tv.startAnimation(fadein);
+						description_tv.setVisibility(View.VISIBLE);
+					}
+					else {
+						description_tv.startAnimation(fadeout);
+						description_tv.setVisibility(View.INVISIBLE);
+					}
+				}
+				else
+					description_tv.setVisibility(View.INVISIBLE);
+			}
+		}
+
+	}
+
+
+	private class OnPageChangedListerner extends ViewPager.SimpleOnPageChangeListener {
+		@Override
+		public void onPageScrollStateChanged(int state) {
+			if (state == ViewPager.SCROLL_STATE_IDLE) {
+				String date = getDateFromPage();
+				if(date != null)
+					date_tv.setText(date);
+			}
+		}
+	}
+
+
+
+	@SuppressLint("SimpleDateFormat") 
+	private String getDateFromPage() {
+		try {
+			String image_url = imageAdapter.images.get(pager.getCurrentItem());
+
+			long timestamp = mDb.fetchTimestamp(image_url);
+
+			Date test = new Date(timestamp * 1000);
+			SimpleDateFormat format = new SimpleDateFormat("EEE, d MMM yyyy");
+			String date = format.format(test);
+			return date;
+		}
+		catch (NoSuchElementException e ) {
+
+			return null;
+		}
+
+	}
+
+	private String getDescriptionFromPage() {
+		try {
+			String image_url = imageAdapter.images.get(pager.getCurrentItem());
+
+			String description = mDb.fetchDescription(image_url);
+			Log.e(TAG, "description : " +description);
+			if(description != null && description.equals(""))
+				return null;
+			return description;
+		}
+		catch (NoSuchElementException e ) {
+			return null;
+		}
 	}
 }

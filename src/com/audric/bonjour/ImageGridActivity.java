@@ -21,7 +21,6 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.audric.bonjour.WebServiceClient.OnUrlsLoadingListener;
-import com.nostra13.example.universalimageloader.Constants.Extra;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
@@ -32,21 +31,22 @@ public class ImageGridActivity extends BaseActivity implements OnUrlsLoadingList
 	private ArrayList<String> imageUrls;
 	private DisplayImageOptions options;
 
-	private PreferencesManager prefManager;
 	private GridView gridView;
-  
-   
+	private BmDatabaseAdapter mDb;
+
+
 	@Override 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ac_image_grid);
 
-		prepareDialog(ImageGridActivity.this);
+		//getApplicationContext().deleteDatabase(BmDatabaseAdapter.DATABASE_NAME);
+
 		WebServiceClient ws = WebServiceClient.getInstance();
 
+		prepareDialog(ImageGridActivity.this);
 		ws.retrieveMadamesUrlsInThread(this);
-		prefManager = new PreferencesManager(getApplicationContext());
- 
+
 		options = new DisplayImageOptions.Builder()
 		.showStubImage(R.drawable.stub_image)
 		.showImageForEmptyUri(R.drawable.image_for_empty_url)
@@ -54,14 +54,17 @@ public class ImageGridActivity extends BaseActivity implements OnUrlsLoadingList
 		.cacheOnDisc()
 		.bitmapConfig(Bitmap.Config.RGB_565)
 		.build();
-		
+
+		mDb = new BmDatabaseAdapter(getApplicationContext());
+		mDb.open();
+
 		ImageLoaderConfiguration configuration = ImageLoaderConfiguration.createDefault(getApplicationContext());
 		imageLoader.init(configuration);
 
 		gridView = (GridView) findViewById(R.id.gridview);
 	}
 
-	private void startImageGalleryActivity(int position) {
+	private void startImagePagerActivity(int position) {
 		Intent intent = new Intent(this, ImagePagerActivity.class);
 		intent.putExtra(Extra.IMAGES, imageUrls);
 		intent.putExtra(Extra.IMAGE_POSITION, position);
@@ -106,11 +109,39 @@ public class ImageGridActivity extends BaseActivity implements OnUrlsLoadingList
 
 
 
+	private void saveSuffixes() {
+		if (WebServiceClient.getSuffixesHasChanged()) {
+			new Thread( new Runnable() {
+				@Override
+				public void run() {
+					ArrayList<String> suffixes = WebServiceClient.getSuffixes();
+					String date;
+					String desc = "";
+					int start = 7, end;
+
+
+					if( suffixes != null) {
+						for (String item : suffixes) {
+							end = item.length() - 4;
+							date = item.substring(start, end);
+							mDb.addEntry(date, desc, item);
+						}
+					}
+					WebServiceClient.setSuffixesHasChanged(false);
+				}
+			}).run();
+
+
+		}
+		else
+			Log.d(TAG, "Suffixes not changed. Nothing to do");
+	}
+
+
 	@Override
-	protected void onStop(){
-		super.onStop();
-		/*save all suffixes to preferences*/
-		prefManager.setSuffixesToPref(WebServiceClient.getSuffixes());
+	protected void onDestroy() {
+		mDb.close();
+		super.onDestroy();
 	}
 
 
@@ -166,7 +197,8 @@ public class ImageGridActivity extends BaseActivity implements OnUrlsLoadingList
 				if(!isOK) {
 					Toast.makeText(getApplicationContext(), R.string.loadfrommemory, Toast.LENGTH_SHORT)
 					.show();
-					imageUrls = prefManager.getUrlsFromPref();
+					if(mDb!= null)
+						imageUrls = mDb.fetchAllUrls(); 
 				}
 				else
 					imageUrls = urls;
@@ -177,10 +209,11 @@ public class ImageGridActivity extends BaseActivity implements OnUrlsLoadingList
 					gridView.setOnItemClickListener(new OnItemClickListener() {
 						@Override
 						public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-							startImageGalleryActivity(position);
+							startImagePagerActivity(position);
 						}
 					});
 					gridView.setOnScrollListener(new PauseOnScrollListener(true, true));
+					saveSuffixes();
 				}
 				else
 					Log.e(TAG, "can not retrieve urls");

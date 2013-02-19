@@ -19,8 +19,11 @@ import android.util.Log;
 public class WebServiceClient {
 	static final int MAX_NB_MADAMES = 200;
 	private static final String TAG = WebServiceClient.class.getSimpleName();
-	public static String ip = "192.168.2.70";//"192.168.2.200"; "10.5.18.228"
+	public static String ip = "192.168.1.67";//"192.168.2.200"; "10.5.18.228"  192.168.2.70
 	public static String port = "8080";
+	
+	private static boolean suffixesHasChanged = false;
+	
 
 
 	private static ArrayList<String> suffixes = new ArrayList<String>();
@@ -33,10 +36,6 @@ public class WebServiceClient {
 
 
 
-
-	//private OnSuffixesLoadingListener onSuffixesListener;
-	//private OnUrlsLoadingListener onUrlsListener;
-
 	public interface OnSuffixesLoadingListener {
 		public abstract void suffixesLoadingFinished(boolean isOK, ArrayList<String> suffixes);
 	}
@@ -44,19 +43,19 @@ public class WebServiceClient {
 	public interface OnUrlsLoadingListener {
 		public abstract void urlsLoadingFinished(boolean isOK, ArrayList<String> urls);
 	}
-
-
-	/*
-	public void setOnSuffixesListener(
-			OnSuffixesLoadingListener onSuffixesListener) {
-		this.onSuffixesListener = onSuffixesListener;
+	
+	public static void setSuffixesHasChanged(boolean suffixesHasChanged) {
+		WebServiceClient.suffixesHasChanged = suffixesHasChanged;
 	}
 
+	
+	public static boolean getSuffixesHasChanged() {
+		return suffixesHasChanged;
+	}
+	
 
-	public void setOnUrlsListener(OnUrlsLoadingListener onUrlsListener) {
-		this.onUrlsListener = onUrlsListener;
-	}*/
-
+	
+	
 
 	public static WebServiceClient getInstance() {
 		if (instance== null) {
@@ -83,11 +82,13 @@ public class WebServiceClient {
 				builder.append(line);
 			}
 
+			setSuffixesHasChanged(true);
 			in.close();
 			return builder.toString();
 
 		}
 		catch (IOException io) {
+			io.printStackTrace();
 		}
 
 		return null;
@@ -95,27 +96,6 @@ public class WebServiceClient {
 
 
 
-	/*public void retrieveMadamesSuffixesInThread(final OnSuffixesLoadingListener callback) {
-		new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				ArrayList<String> suffixes = getAvailableMadameOnServerSuffix();
-				if(callback!=null) {
-					if(suffixes!=null) {
-						callback.suffixesLoadingFinished(true, suffixes);
-					}
-					else
-						callback.suffixesLoadingFinished(false, null);
-				}
-				else
-					Log.e(TAG, "suffixesListener not set!");
-
-			}
-		}).start();
-
-	}
-	 */
 	public void retrieveMadamesUrlsInThread(final OnUrlsLoadingListener callback) {
 		new Thread(new Runnable() {
 
@@ -163,11 +143,9 @@ public class WebServiceClient {
 						}
 					}  
 
-					Log.d(TAG, "returing suffixes::" + (suffixes==null?"NULL":"not null"));
 					return suffixes;  
 				} catch (JSONException e) {
 					e.printStackTrace();
-					Log.d(TAG, "returing suffixes:null");
 					return null;
 				}
 			}
@@ -175,7 +153,6 @@ public class WebServiceClient {
 				return null;
 		}
 		else {
-			Log.d(TAG, "returing suffixes::" + (suffixes==null?"NULL":"not null"));
 			return suffixes;
 		}
 

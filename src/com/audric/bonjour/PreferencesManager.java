@@ -12,6 +12,7 @@ public class PreferencesManager {
 	private SharedPreferences preferences = null;
 
 	public static final String PREF_FILENAME = "MyBonjourPrefs";
+	public static final String IMAGES_URLS_PREFIX = "imageSuffixes.";
 
 	public PreferencesManager(Context context) {
 		preferences = context.getSharedPreferences(PREF_FILENAME, 0);
@@ -23,11 +24,18 @@ public class PreferencesManager {
 		Map<String, ?> presetDataMap = preferences.getAll();
 
 		int indice = 0;
+		Log.e(TAG, "size of pref! "+ presetDataMap.keySet().size());
 		for (Object key : presetDataMap.keySet()) {
 			String key_s = (String) key;
-			if(indice <= WebServiceClient.MAX_NB_MADAMES && key_s.startsWith("imageSuffixes.")) {
-				//Log.d(TAG, "loading prefs:"+indice+" value:" + presetDataMap.get(key));
-				urls.add(WebServiceClient.prefix + presetDataMap.get(key));
+			int indiceToAdd = 0;
+			Log.d(TAG, "key:"+key_s);
+			if(indice <= WebServiceClient.MAX_NB_MADAMES && key_s.startsWith(IMAGES_URLS_PREFIX)) {
+				indiceToAdd = Integer.parseInt(key_s.substring(key_s.indexOf('.')+1));
+				if(indiceToAdd>urls.size())
+					indiceToAdd = urls.size();
+
+				Log.d(TAG, "loading prefs:"+indice+" value:" + presetDataMap.get(key));
+				urls.add(indiceToAdd, WebServiceClient.prefix + presetDataMap.get(key));
 				indice++;
 
 			}
@@ -46,7 +54,7 @@ public class PreferencesManager {
 
 			for (Object key : presetDataMap.keySet()) {
 				String key_s = (String) key;
-				if(key_s.startsWith("imageSuffixes.")) {
+				if(key_s.startsWith(IMAGES_URLS_PREFIX)) {
 					//Log.d(TAG, "erasing prefs: value:" + presetDataMap.get(key));
 					editor.remove(key_s);
 				}
@@ -56,8 +64,8 @@ public class PreferencesManager {
 			int i = 0; 
 
 			for(String suffixe : suffixes) {
-				//Log.d(TAG, "saving : imageSuffixes." + i+ " as " +suffixe);
-				editor.putString("imageSuffixes." + i, suffixe);
+				Log.d(TAG, "saving : " + IMAGES_URLS_PREFIX + i+ " as " +suffixe);
+				editor.putString(IMAGES_URLS_PREFIX + i, suffixe);
 				i++;
 			}
 			editor.commit();
