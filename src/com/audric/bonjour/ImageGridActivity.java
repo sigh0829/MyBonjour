@@ -45,6 +45,7 @@ public class ImageGridActivity extends BaseActivity implements OnUrlsLoadingList
 		WebServiceClient ws = WebServiceClient.getInstance();
 
 		prepareDialog(ImageGridActivity.this);
+		ws.resetSuffixes();
 		ws.retrieveMadamesUrlsInThread(this);
 
 		options = new DisplayImageOptions.Builder()

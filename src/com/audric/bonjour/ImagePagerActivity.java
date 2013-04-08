@@ -1,17 +1,13 @@
 package com.audric.bonjour;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.NoSuchElementException;
 
-import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -201,13 +197,19 @@ implements OnUrlsLoadingListener {
 		mDb.close();
 		super.onDestroy();
 	}
+	
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		outState.putInt(Extra.IMAGE_POSITION, pager.getCurrentItem());
+		super.onSaveInstanceState(outState);
+	}
 
 	private class ShowDetailsClickListener implements OnClickListener  {
 
 		@Override
 		public void onClick(View v) {
 			if(imageAdapter != null) {
-				String date = getDateFromPage();
+				String date = getDate();
 
 				if (date != null) {
 					date_tv.setText(date);
@@ -221,7 +223,7 @@ implements OnUrlsLoadingListener {
 					}
 				}
 
-				String desc = getDescriptionFromPage();
+				String desc = getDescription();
 				//desc = "Proposé par Morback";
 				if(desc != null) {
 					description_tv.setText(desc);
@@ -246,7 +248,7 @@ implements OnUrlsLoadingListener {
 		@Override
 		public void onPageScrollStateChanged(int state) {
 			if (state == ViewPager.SCROLL_STATE_IDLE) {
-				String date = getDateFromPage();
+				String date = getDate();
 				if(date != null)
 					date_tv.setText(date);
 			}
@@ -255,37 +257,20 @@ implements OnUrlsLoadingListener {
 
 
 
-	@SuppressLint("SimpleDateFormat") 
-	private String getDateFromPage() {
-		try {
-			String image_url = imageAdapter.images.get(pager.getCurrentItem());
-
-			long timestamp = mDb.fetchTimestamp(image_url);
-
-			Date test = new Date(timestamp * 1000);
-			SimpleDateFormat format = new SimpleDateFormat("EEE, d MMM yyyy");
-			String date = format.format(test);
-			return date;
-		}
-		catch (NoSuchElementException e ) {
-
-			return null;
-		}
+	private String getDate() throws NoSuchElementException {
+		String image_url = imageAdapter.images.get(pager.getCurrentItem());
+		String date = mDb.getDateFromUrls(image_url);
+		return date;
 
 	}
 
-	private String getDescriptionFromPage() {
-		try {
-			String image_url = imageAdapter.images.get(pager.getCurrentItem());
+	private String getDescription() throws NoSuchElementException{
+		String image_url = imageAdapter.images.get(pager.getCurrentItem());
 
-			String description = mDb.fetchDescription(image_url);
-			Log.e(TAG, "description : " +description);
-			if(description != null && description.equals(""))
-				return null;
-			return description;
-		}
-		catch (NoSuchElementException e ) {
+		String description = mDb.fetchDescription(image_url);
+
+		if(description != null && description.equals(""))
 			return null;
-		}
+		return description;
 	}
 }

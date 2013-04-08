@@ -19,7 +19,7 @@ import android.util.Log;
 public class WebServiceClient {
 	static final int MAX_NB_MADAMES = 200;
 	private static final String TAG = WebServiceClient.class.getSimpleName();
-	public static String ip = "192.168.1.67";//"192.168.2.200"; "10.5.18.228"  192.168.2.70
+	public static String ip = "192.168.1.62";//"192.168.2.200"; "10.5.18.228"  192.168.2.70
 	public static String port = "8080";
 	
 	private static boolean suffixesHasChanged = false;
@@ -27,15 +27,16 @@ public class WebServiceClient {
 
 
 	private static ArrayList<String> suffixes = new ArrayList<String>();
+	//private static ArrayList<String> description = new ArrayList<String>();
 
 	private static WebServiceClient instance = null;
-
+ 
 	public static String prefix =  "http://" + ip + ":" + port;
 	private static  String urlGetAvailableMadameOnServer = prefix + "/all_images/FULL";
 
-
-
-
+ 
+ 
+ 
 	public interface OnSuffixesLoadingListener {
 		public abstract void suffixesLoadingFinished(boolean isOK, ArrayList<String> suffixes);
 	}
@@ -125,7 +126,7 @@ public class WebServiceClient {
 		return suffixes;
 	}
 
-
+	
 
 
 	private ArrayList<String> getAvailableMadameOnServerSuffix() {
@@ -135,28 +136,23 @@ public class WebServiceClient {
 			if(madamesAsString != null) { 
 				try {
 					JSONObject jsonobj = new JSONObject(madamesAsString);
-					JSONArray array = jsonobj.getJSONArray("all_madames");
+					JSONArray madames = jsonobj.getJSONArray("all_madames");
 
-					if(array!=null) {
-						for (int i = 0; i < MAX_NB_MADAMES && i<array.length(); i++) {
-							suffixes.add(array.getString(i));
+					if(madames!=null) {
+						for (int i = 0; i < MAX_NB_MADAMES && i<madames.length(); i++) {
+							suffixes.add(madames.getString(i));
 						}
 					}  
-
+					
 					return suffixes;  
 				} catch (JSONException e) {
 					e.printStackTrace();
 					return null;
 				}
 			}
-			else
-				return null;
+			return null;
 		}
-		else {
-			return suffixes;
-		}
-
-
+		return suffixes;
 	}
 
 

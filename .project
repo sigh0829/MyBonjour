@@ -3,6 +3,7 @@
 	<name>MyBonjour</name>
 	<comment></comment>
 	<projects>
+		<project>UniversalImageLoader</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -1,7 +1,9 @@
 package com.audric.bonjour;
 
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.NoSuchElementException;
 
 import android.content.ContentValues;
@@ -266,6 +268,15 @@ public class BmDatabaseAdapter {
 				mCursor.close();
 		}
 		throw new NoSuchElementException("Can't find a entry in db with : " + image_url);
+	}
+
+	public String getDateFromUrls(String image_url) {
+		long timestamp = fetchTimestamp(image_url);
+
+		Date test = new Date(timestamp * 1000);
+		SimpleDateFormat format = new SimpleDateFormat("EEE, d MMM yyyy");
+		String date = format.format(test);
+		return date;
 	}
 
 
