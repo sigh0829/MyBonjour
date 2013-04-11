@@ -19,7 +19,7 @@ import android.util.Log;
 public class WebServiceClient {
 	static final int MAX_NB_MADAMES = 200;
 	private static final String TAG = WebServiceClient.class.getSimpleName();
-	public static String ip = "192.168.1.62";//"192.168.2.200"; "10.5.18.228"  192.168.2.70
+	public static String ip = "192.168.1.62";
 	public static String port = "8080";
 	
 	private static boolean suffixesHasChanged = false;
@@ -27,7 +27,6 @@ public class WebServiceClient {
 
 
 	private static ArrayList<String> suffixes = new ArrayList<String>();
-	//private static ArrayList<String> description = new ArrayList<String>();
 
 	private static WebServiceClient instance = null;
  

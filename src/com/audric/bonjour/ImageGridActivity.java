@@ -117,7 +117,6 @@ public class ImageGridActivity extends BaseActivity implements OnUrlsLoadingList
 				public void run() {
 					ArrayList<String> suffixes = WebServiceClient.getSuffixes();
 					String date;
-					String desc = "";
 					int start = 7, end;
 
 
@@ -125,7 +124,7 @@ public class ImageGridActivity extends BaseActivity implements OnUrlsLoadingList
 						for (String item : suffixes) {
 							end = item.length() - 4;
 							date = item.substring(start, end);
-							mDb.addEntry(date, desc, item);
+							mDb.insertOrUpdateMadame(date, item);
 						}
 					}
 					WebServiceClient.setSuffixesHasChanged(false);
@@ -171,7 +170,6 @@ public class ImageGridActivity extends BaseActivity implements OnUrlsLoadingList
 		case R.id.update_gridview:
 			Log.d(TAG, "update");
 			break;
-
 		case R.id.delete_cache_gridview:
 			new Thread(new Runnable() {
 
@@ -182,6 +180,9 @@ public class ImageGridActivity extends BaseActivity implements OnUrlsLoadingList
 				}
 			}
 					).start();
+			break;
+		default:
+			break;
 		}
 
 		return super.onOptionsItemSelected(item);

@@ -5,7 +5,6 @@ import android.content.Context;
 import android.os.Bundle;
 
 import com.audric.customprogressdialog.CustomProgressDialog;
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 public abstract class BaseActivity extends Activity {
@@ -17,7 +16,6 @@ public abstract class BaseActivity extends Activity {
 	private boolean instanceStateSaved;
 
 
-	protected DisplayImageOptions options;
 
 
 	private CustomProgressDialog dialog;

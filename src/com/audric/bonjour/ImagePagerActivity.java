@@ -28,18 +28,20 @@ import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
 public class ImagePagerActivity extends BaseActivity 
 implements OnUrlsLoadingListener {
-	private static final String TAG = ImagePagerActivity.class.getSimpleName();
+	//private static final String TAG = ImagePagerActivity.class.getSimpleName();
 
 	private int pagerPosition;
 	private TextView date_tv;
-	private TextView description_tv;
 	private ViewPager pager;
 	private BmDatabaseAdapter mDb;
 	private ImagePagerAdapter imageAdapter = null;
 	private Animation fadein;
 	private Animation fadeout;
+	
+	private DisplayImageOptions options;
 
 
+	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ac_image_pager);
@@ -103,7 +105,7 @@ implements OnUrlsLoadingListener {
 			final ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image);
 			final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
 
-			imageLoader.displayImage(images.get(position), ( ImageView) imageView, options, new SimpleImageLoadingListener() {
+			imageLoader.displayImage(images.get(position), imageView, options, new SimpleImageLoadingListener() {
 				@Override
 				public void onLoadingStarted() {
 					spinner.setVisibility(View.VISIBLE);
@@ -121,6 +123,8 @@ implements OnUrlsLoadingListener {
 						break;
 					case UNKNOWN:
 						message = "Unknown error";
+						break;
+					default:
 						break;
 					}
 					Toast.makeText(ImagePagerActivity.this, message, Toast.LENGTH_SHORT).show();
@@ -184,7 +188,6 @@ implements OnUrlsLoadingListener {
 					pager.setCurrentItem(pagerPosition);
 					pager.setOnPageChangeListener(new OnPageChangedListerner());
 					date_tv = (TextView) findViewById(R.id.tv_date_pager);
-					description_tv = (TextView) findViewById(R.id.tv_desc_pager);
 				}
 			}
 		});
@@ -223,21 +226,6 @@ implements OnUrlsLoadingListener {
 					}
 				}
 
-				String desc = getDescription();
-				//desc = "Proposé par Morback";
-				if(desc != null) {
-					description_tv.setText(desc);
-					if (description_tv.getVisibility() == View.INVISIBLE) {
-						description_tv.startAnimation(fadein);
-						description_tv.setVisibility(View.VISIBLE);
-					}
-					else {
-						description_tv.startAnimation(fadeout);
-						description_tv.setVisibility(View.INVISIBLE);
-					}
-				}
-				else
-					description_tv.setVisibility(View.INVISIBLE);
 			}
 		}
 
@@ -262,15 +250,5 @@ implements OnUrlsLoadingListener {
 		String date = mDb.getDateFromUrls(image_url);
 		return date;
 
-	}
-
-	private String getDescription() throws NoSuchElementException{
-		String image_url = imageAdapter.images.get(pager.getCurrentItem());
-
-		String description = mDb.fetchDescription(image_url);
-
-		if(description != null && description.equals(""))
-			return null;
-		return description;
 	}
 }

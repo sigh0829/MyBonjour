@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.NoSuchElementException;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -19,7 +20,6 @@ public class BmDatabaseAdapter {
 	// Database Keys
 	public static final String KEY_ROWID = "_id";
 	public static final String KEY_DATE = "date";
-	public static final String KEY_DESCRIPTION = "description";
 	public static final String KEY_FILENAME = "filename";
 
 
@@ -38,22 +38,19 @@ public class BmDatabaseAdapter {
 	private static final String DATABASE_CREATE_IMAGE = "create table "
 			+ IMAGE_TABLE + " (_id integer primary key autoincrement, "
 			+ KEY_DATE + " text not null,"
-			+ KEY_FILENAME + " text not null,"
-			+ KEY_DESCRIPTION + "	text );";
+			+ KEY_FILENAME + " text not null);";
 
 
 
 	public static final int rowidx = 0;
 	public static final int dateidx = 1;
 	public static final int filenameidx = 2;
-	public static final int descidx = 3;
 
 
 
 	private Context mCtx;
 
 	private static class DatabaseHelper extends SQLiteOpenHelper {
-
 		DatabaseHelper(Context context) {
 			super(context, DATABASE_NAME, null, DATABASE_VERSION);
 
@@ -109,23 +106,21 @@ public class BmDatabaseAdapter {
 
 
 	/**
-	 * add the given entry, or edit the existing one
-	 * note : you need to commit changes at the end.
+	 * Insert a new entry, or update the existing one if it already exists
+	 * IMPORTANT NOTE : you need to commit changes at the end.
 	 * @param timestamp the timestamp as string 
 	 * @param desc the description of this image
 	 */
-	public void addEntry(String timestamp, String desc, String filename) {
-
+	public void insertOrUpdateMadame(String timestamp, String filename) {
 		ContentValues values = new ContentValues();
 		values.put(KEY_DATE, timestamp);
-		values.put(KEY_DESCRIPTION, desc);
 		values.put(KEY_FILENAME, filename);
-		if (isInDatabase(timestamp)) {
-			Log.d(TAG, "updating entry : " + timestamp + " desc:'"+desc+ "' filename:" +filename);
+		if (exists(timestamp)) {
+			Log.d(TAG, "updating entry : " + timestamp +" filename:" +filename);
 			mDb.update(IMAGE_TABLE, values, KEY_DATE + " = " + timestamp, null);
 		}
 		else {
-			Log.d(TAG, "inserting entry : " + timestamp + " desc:'"+desc+ "' filename:" +filename);
+			Log.d(TAG, "inserting entry : " + timestamp + " filename:" +filename);
 			mDb.insert(IMAGE_TABLE, null, values);
 		}
 	}
@@ -139,7 +134,7 @@ public class BmDatabaseAdapter {
 	 * @return
 	 * @throws SQLException
 	 */
-	public boolean isInDatabase(String timestamp) throws SQLException {
+	public boolean exists(String timestamp) throws SQLException {
 		Cursor mCursor = mDb.query
 				(true, IMAGE_TABLE,
 						new String[] {KEY_DATE},
@@ -150,28 +145,11 @@ public class BmDatabaseAdapter {
 		}
 		else if(mCursor!=null) 
 			mCursor.close();
-
 		return false;
 	}
 
 
 
-
-	public String getDesc(String timestamp) throws NoSuchElementException {
-		Cursor mCursor = mDb.query
-				(true, IMAGE_TABLE,
-						new String[] {KEY_DATE, KEY_DESCRIPTION},
-						KEY_DATE + "= '" + timestamp +"'", null, null, null, null, null);
-
-		String desc = null;
-		if(mCursor != null) {
-			desc = mCursor.getString(descidx);
-			mCursor.close();
-			return desc;
-		}
-		else
-			throw new NoSuchElementException("No entry with timestamp " + timestamp + "found in db");
-	}
 
 
 	private ArrayList<String> fetchAllSuffixes() {
@@ -208,8 +186,7 @@ public class BmDatabaseAdapter {
 			}
 			return urls;
 		}
-		else
-			return null;
+		return null;
 
 	}
 
@@ -243,36 +220,8 @@ public class BmDatabaseAdapter {
 
 
 
-
-	public String fetchDescription(String image_url) throws NoSuchElementException{
-
-		if( image_url != null) {
-			int start = image_url.indexOf("/image/");
-			if(start == -1)
-				throw new NoSuchElementException("Can't find a entry in db with : " + image_url);
-
-			String suffixe = image_url.substring(start);
-			Cursor mCursor = mDb.query
-					(IMAGE_TABLE,
-							new String[] {KEY_DESCRIPTION},
-							KEY_FILENAME + " LIKE \"" + suffixe + "\"", null, null, null, null);
-
-			if (mCursor!= null && mCursor.getCount() != 0) {
-				mCursor.moveToFirst();
-				String description = mCursor.getString(0);
-
-				mCursor.close();
-				return description;
-			}
-			else if (mCursor!=null)
-				mCursor.close();
-		}
-		throw new NoSuchElementException("Can't find a entry in db with : " + image_url);
-	}
-
-	public String getDateFromUrls(String image_url) {
+	@SuppressLint("SimpleDateFormat") public String getDateFromUrls(String image_url) {
 		long timestamp = fetchTimestamp(image_url);
-
 		Date test = new Date(timestamp * 1000);
 		SimpleDateFormat format = new SimpleDateFormat("EEE, d MMM yyyy");
 		String date = format.format(test);
