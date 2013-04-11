@@ -1,6 +1,7 @@
 package com.audric.bonjour;
 
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
+import it.sephiroth.android.library.imagezoom.ImageViewTouch.OnPageScaleListener;
 
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
@@ -34,7 +35,7 @@ implements OnUrlsLoadingListener {
 
 	private int pagerPosition;
 	private TextView date_tv;
-	private ViewPager pager;
+	private DeactivableViewPager pager;
 	private BmDatabaseAdapter mDb;
 	private ImagePagerAdapter imageAdapter = null;
 	private Animation fadein;
@@ -74,7 +75,7 @@ implements OnUrlsLoadingListener {
 		.displayer(new FadeInBitmapDisplayer(300))
 		.build();
 
-		pager = (ViewPager) findViewById(R.id.pager);
+		pager = (DeactivableViewPager) findViewById(R.id.pager);
 	}
 
 
@@ -108,6 +109,21 @@ implements OnUrlsLoadingListener {
 			final View imageLayout = inflater.inflate(R.layout.item_pager_image, null);
 			final ImageViewTouch imageView = (ImageViewTouch) imageLayout.findViewById(R.id.image);
 			final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
+			imageView.setOnScaleListener(new OnPageScaleListener() {
+			    @Override
+			    public void onScaleBegin() {
+			    	pager.deactivate();
+			    }
+
+			    @Override
+			    public void onScaleEnd(float scale) {
+			        if (scale > 1.0) {
+			        	pager.deactivate();
+			        } else {
+			        	pager.activate();
+			        }
+			    }
+			});
 
 			imageLoader.displayImage(images.get(position), imageView, options, new SimpleImageLoadingListener() {
 				@Override
@@ -131,17 +147,15 @@ implements OnUrlsLoadingListener {
 					default:
 						break;
 					}
+					
 					Toast.makeText(ImagePagerActivity.this, message, Toast.LENGTH_SHORT).show();
-					Log.e(TAG, "error : " + message);
 					spinner.setVisibility(View.GONE);
 					imageView.setImageResource(android.R.drawable.ic_delete);
 				}
 
 				@Override
 				public void onLoadingComplete(Bitmap loadedImage) {
-					Log.e(TAG, "loading image completed : bitmap" + loadedImage);
 					spinner.setVisibility(View.GONE);
-					imageView.setVisibility(View.VISIBLE);
 					imageView.setOnClickListener(new ShowDetailsClickListener());
 				}
 			});
