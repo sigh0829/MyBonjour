@@ -1,5 +1,7 @@
 package com.audric.bonjour;
 
+import it.sephiroth.android.library.imagezoom.ImageViewTouch;
+
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 
@@ -8,12 +10,12 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,7 +30,7 @@ import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
 public class ImagePagerActivity extends BaseActivity 
 implements OnUrlsLoadingListener {
-	//private static final String TAG = ImagePagerActivity.class.getSimpleName();
+	private static final String TAG = ImagePagerActivity.class.getSimpleName();
 
 	private int pagerPosition;
 	private TextView date_tv;
@@ -37,7 +39,7 @@ implements OnUrlsLoadingListener {
 	private ImagePagerAdapter imageAdapter = null;
 	private Animation fadein;
 	private Animation fadeout;
-	
+
 	private DisplayImageOptions options;
 
 
@@ -75,6 +77,8 @@ implements OnUrlsLoadingListener {
 		pager = (ViewPager) findViewById(R.id.pager);
 	}
 
+
+
 	private class ImagePagerAdapter extends PagerAdapter {
 
 		private ArrayList<String> images;
@@ -102,7 +106,7 @@ implements OnUrlsLoadingListener {
 		@Override
 		public Object instantiateItem(View view, int position) {
 			final View imageLayout = inflater.inflate(R.layout.item_pager_image, null);
-			final ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image);
+			final ImageViewTouch imageView = (ImageViewTouch) imageLayout.findViewById(R.id.image);
 			final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
 
 			imageLoader.displayImage(images.get(position), imageView, options, new SimpleImageLoadingListener() {
@@ -128,14 +132,16 @@ implements OnUrlsLoadingListener {
 						break;
 					}
 					Toast.makeText(ImagePagerActivity.this, message, Toast.LENGTH_SHORT).show();
-
+					Log.e(TAG, "error : " + message);
 					spinner.setVisibility(View.GONE);
 					imageView.setImageResource(android.R.drawable.ic_delete);
 				}
 
 				@Override
 				public void onLoadingComplete(Bitmap loadedImage) {
+					Log.e(TAG, "loading image completed : bitmap" + loadedImage);
 					spinner.setVisibility(View.GONE);
+					imageView.setVisibility(View.VISIBLE);
 					imageView.setOnClickListener(new ShowDetailsClickListener());
 				}
 			});
@@ -200,7 +206,7 @@ implements OnUrlsLoadingListener {
 		mDb.close();
 		super.onDestroy();
 	}
-	
+
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putInt(Extra.IMAGE_POSITION, pager.getCurrentItem());
