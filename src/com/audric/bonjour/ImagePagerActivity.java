@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -31,7 +30,7 @@ import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
 public class ImagePagerActivity extends BaseActivity 
 implements OnUrlsLoadingListener {
-	private static final String TAG = ImagePagerActivity.class.getSimpleName();
+	//private static final String TAG = ImagePagerActivity.class.getSimpleName();
 
 	private int pagerPosition;
 	private TextView date_tv;
