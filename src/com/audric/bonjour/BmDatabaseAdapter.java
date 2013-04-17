@@ -115,11 +115,11 @@ public class BmDatabaseAdapter {
 		ContentValues values = new ContentValues();
 		values.put(KEY_DATE, timestamp);
 		values.put(KEY_FILENAME, filename);
-		if (exists(timestamp)) {
+		/*if (exists(timestamp)) {
 			Log.d(TAG, "updating entry : " + timestamp +" filename:" +filename);
 			mDb.update(IMAGE_TABLE, values, KEY_DATE + " = " + timestamp, null);
-		}
-		else {
+		}*/
+		if(!exists(timestamp)) {
 			Log.d(TAG, "inserting entry : " + timestamp + " filename:" +filename);
 			mDb.insert(IMAGE_TABLE, null, values);
 		}

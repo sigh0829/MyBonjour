@@ -1,7 +1,6 @@
 
-[	]	- intégrer zoom image view		 : :O pas easy ?!
-[x	]	- ordre des madames par correct lors du chargements depuis les préférences.
-[	]	- recupere toutes les infos au startpup (pas only les filename) et stocké dans db. comme ça accessible offline
+[	]	- separer viewpager imageview dans library externe et entendre celle ci dans appli.
 [	]	- recuperer liste des madames uniquement dans une des activity, l'autre charge les même
 [x	]	- supprimer gestion description
+[x	]	- ajouter support + bouton 'mark as favorites'
 
